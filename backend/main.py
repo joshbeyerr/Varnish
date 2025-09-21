@@ -94,6 +94,7 @@ async def upload_image(
 
         # Decide protected filename (save as JPG for simplicity)
         protected_filename = f"{ts}_{uid}_cloaked.jpg"
+        
         protected_path = os.path.join("protected", protected_filename)
 
         # 🔥 Apply the fast cloak (FGSM one-step demo)
