@@ -96,10 +96,9 @@ async def upload_image(
         protected_filename = f"{ts}_{uid}_cloaked.jpg"
         protected_path = os.path.join("protected", protected_filename)
 
-        # 🔥 Apply the fast cloak (FGSM one-step demo)
         # NOTE: turbo_fgsm_cloak internally resizes to 224 for speed.
-        # mistifying_image(original_path, protected_path)
-        turbo_fgsm_cloak(original_path, protected_path, target_text=target_text)
+        mistifying_image(original_path, protected_path)
+        # turbo_fgsm_cloak(original_path, protected_path, target_text=target_text)
 
         return {
             "success": True,

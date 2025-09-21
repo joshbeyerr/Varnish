@@ -1103,9 +1103,9 @@ def mistifying_image(in_path, out_path):
     # Initialize with different protection levels
     configs = {
         'extreme': AdvancedConfig(
-            # num_steps=2000,
-            num_steps=20,
-            epsilon=4.0/255.0,
+            num_steps=2000,
+            # num_steps=20,
+            epsilon=12.0/255.0,
             scales=[256, 512, 1024, 2048],
             num_ensemble_models=8
         )
