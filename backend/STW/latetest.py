@@ -1146,3 +1146,9 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+    # image = Image.open("test3.jpg")
+    # result = protector.protect_image_advanced(image, "adversarial_fourier")
+    # result['protected_image'].save("protected_artwork.jpg")
