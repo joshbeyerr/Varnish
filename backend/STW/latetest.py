@@ -15,6 +15,7 @@ import multiprocessing as mp
 from dataclasses import dataclass
 from enum import Enum
 import json
+from PIL import Image
 
 try:
     import cv2
@@ -1093,7 +1094,7 @@ class AdvancedMistProtector:
         print(f"Protection report saved to {output_path}")
 
 
-def main():
+def mistifying_image(in_path, out_path):
     """Demonstration of advanced MIST protector."""
     print("=== Advanced MIST Protector ===")
     print(f"PyTorch version: {torch.__version__}")
@@ -1102,8 +1103,9 @@ def main():
     # Initialize with different protection levels
     configs = {
         'extreme': AdvancedConfig(
-            num_steps=2000,
-            epsilon=12.0/255.0,
+            # num_steps=2000,
+            num_steps=20,
+            epsilon=4.0/255.0,
             scales=[256, 512, 1024, 2048],
             num_ensemble_models=8
         )
@@ -1123,10 +1125,12 @@ def main():
     
     print(f"\nExample usage:")
     
-    # Single image protection
-    image = Image.open("test3.jpg")
+
+    image = Image.open(in_path)
     result = protector.protect_image_advanced(image, "adversarial_fourier")
-    result['protected_image'].save("protected_artwork.jpg")
+
+    result['protected_image'].save(out_path)
+    return result['protected_image']
 
     # protector.save_protection_report(result, "protection_report.json")
     
@@ -1144,11 +1148,8 @@ def main():
     # print("\nReady for advanced image protection!")
 
 
-if __name__ == "__main__":
-    main()
 
-
-
+# 
     # image = Image.open("test3.jpg")
     # result = protector.protect_image_advanced(image, "adversarial_fourier")
     # result['protected_image'].save("protected_artwork.jpg")

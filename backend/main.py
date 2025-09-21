@@ -11,7 +11,9 @@ import uuid
 import shutil
 
 
-from cloak import turbo_fgsm_cloak  
+from cloak import turbo_fgsm_cloak
+from STW.latetest import mistifying_image
+
 
 app = FastAPI(title="Test API", version="1.0.0")
 
@@ -96,6 +98,7 @@ async def upload_image(
 
         # 🔥 Apply the fast cloak (FGSM one-step demo)
         # NOTE: turbo_fgsm_cloak internally resizes to 224 for speed.
+        # mistifying_image(original_path, protected_path)
         turbo_fgsm_cloak(original_path, protected_path, target_text=target_text)
 
         return {
