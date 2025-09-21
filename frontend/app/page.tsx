@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import type React from 'react'
 import axios from 'axios'
 
 const API_BASE_URL = 'http://localhost:8000'
@@ -13,6 +14,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [backendStatus, setBackendStatus] = useState<string>('checking...')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
 
   // Check backend health
   useEffect(() => {
@@ -35,6 +37,44 @@ export default function Home() {
       setSelectedFile(file)
       setUploadResult(null)
       setError(null)
+    }
+  }
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isDragging) setIsDragging(true)
+  }
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    const file = e.dataTransfer?.files?.[0]
+    if (file) {
+      // Basic type guard for images
+      if (!file.type.startsWith('image/')) {
+        setError('Please drop an image file (PNG, JPG, GIF).')
+        return
+      }
+      setSelectedFile(file)
+      setUploadResult(null)
+      setError(null)
+      // Reset the input so selecting the same file later still triggers change
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -138,26 +178,46 @@ export default function Home() {
                     accept="image/*"
                     onChange={handleFileSelect}
                     className="hidden"
-                    id="file-upload"
                   />
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer group relative flex flex-col items-center justify-center w-full h-40 border-2 border-white/30 border-dashed rounded-2xl bg-white/10 backdrop-blur-sm hover:bg-white/20 hover:border-white/50 transition-all duration-500"
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click() }}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`group relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-2xl backdrop-blur-sm transition-all duration-500 cursor-pointer ${
+                      isDragging
+                        ? 'bg-cyan-500/20 border-cyan-300/60'
+                        : 'bg-white/10 border-white/30 hover:bg-white/20 hover:border-white/50'
+                    }`}
                   >
                     {/* Liquid Glass Effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    
+                    <div className={`absolute inset-0 rounded-2xl transition-opacity duration-500 ${
+                      isDragging ? 'bg-gradient-to-r from-cyan-500/20 to-purple-500/20 opacity-100' : 'bg-gradient-to-r from-cyan-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100'
+                    }`}></div>
+                    <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 ${
+                      isDragging ? '' : '-translate-x-full group-hover:translate-x-full'
+                    }`}></div>
+
                     <div className="flex flex-col items-center justify-center pt-5 pb-6 relative z-10">
-                      <svg className="w-12 h-12 mb-4 text-white/70 group-hover:text-white transition-colors duration-300" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                      <svg className={`w-12 h-12 mb-4 transition-colors duration-300 ${isDragging ? 'text-white' : 'text-white/70 group-hover:text-white'}`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
                       </svg>
-                      <p className="mb-2 text-sm text-white/90 group-hover:text-white transition-colors duration-300">
-                        <span className="font-semibold">Click to upload</span> your artwork
+                      <p className={`mb-2 text-sm transition-colors duration-300 ${isDragging ? 'text-white' : 'text-white/90 group-hover:text-white'}`}>
+                        {isDragging ? (
+                          <span className="font-semibold">Drop your image here</span>
+                        ) : (
+                          <>
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </>
+                        )}
                       </p>
                       <p className="text-xs text-white/60">PNG, JPG, GIF up to 10MB</p>
                     </div>
-                  </label>
+                  </div>
                 </div>
 
                 {selectedFile && (
