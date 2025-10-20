@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import type React from 'react'
+import Image from 'next/image'
 import axios from 'axios'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -20,9 +21,9 @@ export default function Home() {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/health`)
+        await axios.get(`${API_BASE_URL}/health`)
         setBackendStatus('connected ✅')
-      } catch (err) {
+      } catch {
         setBackendStatus('disconnected ❌')
         setError('Backend server is not running. Please start it with: python backend/main.py')
       }
@@ -123,9 +124,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-                <img 
+                <Image 
                   src="/images/logo-word.png" 
                   alt="Varnish" 
+                  width={200}
+                  height={48}
                   className="h-12 w-auto"
                 />
               <p className="text-gray-300 mt-1">Protecting Creative Work from AI Training</p>
@@ -254,7 +257,7 @@ export default function Home() {
                     </div>
                   ) : (
                     <span className="relative z-10 flex items-center justify-center">
-                      <img src="/images/white-icon.png" alt="Protect" className="w-5 h-5 mr-2" />
+                      <Image src="/images/white-icon.png" alt="Protect" width={20} height={20} className="w-5 h-5 mr-2" />
                       Protect My Artwork
                     </span>
                   )}
@@ -275,6 +278,7 @@ export default function Home() {
                   </h4>
                   <div className="flex justify-center">
                     <div className="relative group">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={processedImageUrl}
                         alt="Processed artwork"
@@ -373,7 +377,7 @@ export default function Home() {
             Why do we need <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Varnish</span>?
           </h3>
           <p className="text-center text-gray-300 mb-16 text-lg">
-            Learn how images are collected for training AI and Varnish's protection strategy.
+            Learn how images are collected for training AI and Varnish&apos;s protection strategy.
           </p>
           
           <div className="grid md:grid-cols-2 gap-16 items-start">
@@ -398,7 +402,7 @@ export default function Home() {
               <div className="space-y-4">
                 <h4 className="text-xl font-semibold text-white">Current protection methods are easily bypassed</h4>
                 <p className="text-gray-300 leading-relaxed">
-                  Traditional watermarks and metadata can be removed or disabled. Varnish's mission is to confuse AI classification 
+                  Traditional watermarks and metadata can be removed or disabled. Varnish&apos;s mission is to confuse AI classification 
                   at the pixel level, making your art resistant to style extraction while maintaining its visual quality.
                 </p>
               </div>
