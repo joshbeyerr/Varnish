@@ -4,7 +4,7 @@ from PIL import Image
 from torchvision import transforms
 
 
-def turbo_fgsm_cloak(in_path, out_path, target_text="oil painting", eps=4/255):
+def turbo_fgsm_cloak(in_path, out_path, target_text="oil painting", eps=1/255):
     """
     One-step FGSM nudge to push the image embedding toward `target_text`.
     Fast demo: ~1–2s CPU for 224px; not robust like Glaze.

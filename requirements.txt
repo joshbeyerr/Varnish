@@ -1,0 +1,12 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+Pillow>=8.0.0
+git+https://github.com/openai/CLIP.git
+torch
+torchvision
+numpy>=1.23,<3.0
+Pillow>=9.5.0,<11
+opencv-python>=4.8.0
+torch>=2.2.0,<3.0

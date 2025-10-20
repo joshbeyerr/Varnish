@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import type React from 'react'
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -99,7 +99,11 @@ export default function Home() {
 
       setUploadResult(response.data.message)
       // Set the processed image URL for display
-      setProcessedImageUrl(`${API_BASE_URL}${response.data.download_url}`)
+      if (response.data.processed_image) {
+        setProcessedImageUrl(response.data.processed_image)
+      } else if (response.data.download_url) {
+        setProcessedImageUrl(`${API_BASE_URL}${response.data.download_url}`)
+      }
       setSelectedFile(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -280,16 +284,24 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div className="absolute bottom-4 left-4 right-4">
                           <p className="text-white text-sm font-medium">
-                            Protected with Blacklight
+                            Protected with Varnish
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div className="mt-6 text-center">
-                    <a
-                      href={processedImageUrl}
-                      download
+                    <button
+                      onClick={() => {
+                        if (processedImageUrl) {
+                          const link = document.createElement('a')
+                          link.href = processedImageUrl
+                          link.download = 'protected-image.jpg'
+                          document.body.appendChild(link)
+                          link.click()
+                          document.body.removeChild(link)
+                        }
+                      }}
                       className="group relative inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-medium rounded-2xl border border-white/30 hover:bg-white/30 hover:border-white/50 transition-all duration-500 transform hover:scale-105"
                     >
                       {/* Liquid Glass Effect */}
@@ -300,7 +312,7 @@ export default function Home() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                       </svg>
                       <span className="relative z-10">Download Protected Image</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -358,10 +370,10 @@ export default function Home() {
       <section className="py-20 px-4 bg-gradient-to-br from-blue-900/30 to-purple-900/30">
         <div className="max-w-6xl mx-auto">
           <h3 className="text-4xl font-bold text-center text-white mb-4">
-            Why do we need <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Blacklight</span>?
+            Why do we need <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Varnish</span>?
           </h3>
           <p className="text-center text-gray-300 mb-16 text-lg">
-            Learn how images are collected for training AI and Blacklight's protection strategy.
+            Learn how images are collected for training AI and Varnish's protection strategy.
           </p>
           
           <div className="grid md:grid-cols-2 gap-16 items-start">
@@ -386,7 +398,7 @@ export default function Home() {
               <div className="space-y-4">
                 <h4 className="text-xl font-semibold text-white">Current protection methods are easily bypassed</h4>
                 <p className="text-gray-300 leading-relaxed">
-                  Traditional watermarks and metadata can be removed or disabled. Blacklight's mission is to confuse AI classification 
+                  Traditional watermarks and metadata can be removed or disabled. Varnish's mission is to confuse AI classification 
                   at the pixel level, making your art resistant to style extraction while maintaining its visual quality.
                 </p>
               </div>
@@ -394,113 +406,66 @@ export default function Home() {
             
             {/* Visual Flow */}
             <div className="flex flex-col items-center space-y-8">
-              {/* Cloud 1: Human Art Collection */}
+              {/* Step 1: Web Scraping Collection */}
               <div className="relative">
-                <div className="w-64 h-40 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-                  <div className="grid grid-cols-4 gap-2 mb-4">
-                    {[...Array(8)].map((_, i) => (
-                      <div key={i} className="h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg"></div>
-                    ))}
-                  </div>
-                  <div className="flex justify-center items-center space-x-2">
-                    <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    </div>
-                    <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                      <div className="w-4 h-4 bg-white rounded-full"></div>
-                    </div>
-                    <div className="w-5 h-5 bg-gray-600 rounded-full flex items-center justify-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="text-center mt-2">
-                    <span className="text-white text-sm font-medium">Human Art</span>
-                  </div>
+                <div className="w-64 h-32 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 flex flex-col items-center justify-center">
+                  {/* Simple web icon */}
+                  <svg className="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"/>
+                  </svg>
+                  <span className="text-white text-sm font-medium">Web Scraping</span>
                 </div>
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-cyan-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    Step 1: Collection
+                  <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    Step 1
                   </div>
                 </div>
               </div>
               
-              {/* Arrow */}
+              {/* Arrow with label */}
               <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-400 mb-2">Training Data</span>
                 <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                 </svg>
               </div>
               
-              {/* Cloud 2: AI Mixed Content */}
+              {/* Step 2: AI Learning Process */}
               <div className="relative">
-                <div className="w-64 h-40 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-                  <div className="grid grid-cols-4 gap-2 mb-4">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg"></div>
-                    ))}
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i+4} className="h-12 bg-gray-600 rounded-lg"></div>
-                    ))}
-                  </div>
-                  <div className="flex justify-center items-center space-x-2">
-                    <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center">
-                      <div className="w-4 h-4 bg-white rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="text-center mt-2">
-                    <span className="text-white text-sm font-medium">AI Mixed Content</span>
-                  </div>
+                <div className="w-64 h-32 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 flex flex-col items-center justify-center">
+                  {/* Simple AI brain icon */}
+                  <svg className="w-12 h-12 text-purple-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                  </svg>
+                  <span className="text-white text-sm font-medium">AI Training</span>
                 </div>
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <div className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    Step 2: Learning
+                    Step 2
                   </div>
                 </div>
               </div>
               
-              {/* Arrow */}
+              {/* Arrow with label */}
               <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-400 mb-2">AI Confusion</span>
                 <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                 </svg>
               </div>
               
-              {/* Cloud 3: Protected Content */}
+              {/* Step 3: Varnish Protection */}
               <div className="relative">
-                <div className="w-64 h-40 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-                  <div className="grid grid-cols-4 gap-2 mb-4">
-                    {[...Array(4)].map((_, i) => (
-                      <div key={i} className="h-12 bg-gray-600 rounded-lg"></div>
-                    ))}
-                    {[...Array(2)].map((_, i) => (
-                      <div key={i+4} className="h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-6 h-6 bg-white/20 rounded-full border border-white/40"></div>
-                        </div>
-                      </div>
-                    ))}
-                    {[...Array(2)].map((_, i) => (
-                      <div key={i+6} className="h-12 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-lg relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-6 h-6 bg-white/20 rounded-full border border-white/40"></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-center items-center space-x-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-400 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="text-center mt-2">
-                    <span className="text-white text-sm font-medium">Protected Art</span>
-                  </div>
+                <div className="w-64 h-32 bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20 flex flex-col items-center justify-center">
+                  {/* Simple shield icon */}
+                  <svg className="w-12 h-12 text-green-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                  <span className="text-white text-sm font-medium">Varnish Protection</span>
                 </div>
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                    Step 3: Protection
+                  <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    Step 3
                   </div>
                 </div>
               </div>
@@ -513,7 +478,7 @@ export default function Home() {
       <footer className="bg-black/50 backdrop-blur-sm border-t border-gray-800 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h4 className="text-3xl font-bold mb-4">
-            Bl<span className="text-cyan-400">a</span>ckl<span className="text-purple-400">i</span>ght
+            Varnish
           </h4>
           <p className="text-gray-300 mb-8 text-lg">
             Empowering artists to protect their creative work in the age of AI
@@ -524,17 +489,14 @@ export default function Home() {
                 <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
               </svg>
             </div>
-            <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center hover:bg-purple-600 transition-colors cursor-pointer">
-              <svg className="w-6 h-6 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-              </svg>
-            </div>
+
           </div>
           <p className="text-sm text-gray-500">
-            © 2024 Blacklight. Protecting creative work worldwide.
+            © 2025 Varnish. Protecting creative work worldwide.
           </p>
         </div>
       </footer>
     </main>
   )
 }
+

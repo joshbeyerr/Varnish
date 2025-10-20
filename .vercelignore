@@ -1,0 +1,11 @@
+# Vercel ignore file
+api/venv/
+api/__pycache__/
+api/uploads/
+api/protected/
+api/STW/__pycache__/
+frontend/node_modules/
+frontend/.next/
+*.log
+.env
+.env.local

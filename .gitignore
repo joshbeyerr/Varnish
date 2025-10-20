@@ -251,12 +251,4 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-uploads/
-protected/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.bmp
-*.tiff
+
