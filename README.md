@@ -1,4 +1,4 @@
-# Next.js + FastAPI Test Application
+# Varnish - A hackathon project designed to protect creatives digital artwork from unauthorized scraping (for training purposes)
 
 
 Start backend by just cd into the backend folder and running the file (python main.py)
